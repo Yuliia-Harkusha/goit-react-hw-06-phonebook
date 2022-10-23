@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
+import { getContacts } from 'redux/contactsSlice';
 import { FormItem, Input, Label, Button } from './ContactForm.styled';
 
 export const FormAddContact = ({ onSubmit }) => {
@@ -9,6 +11,9 @@ export const FormAddContact = ({ onSubmit }) => {
 
   const nameId = nanoid();
   const numberId = nanoid();
+
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     const { name, value } = e.target;

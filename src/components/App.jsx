@@ -1,4 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  addContact,
+  removeContact,
+  changeFilter,
+  getContacts,
+  getFilter,
+} from 'redux/contactsSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { nanoid } from 'nanoid';
@@ -16,41 +23,28 @@ import {
 } from './App.styled';
 
 export const App = () => {
-  const [contacts, setContacts] = useState(() => {
-    const value = JSON.parse(localStorage.getItem('contacts'));
-    return value ?? [];
-  });
-  const [filter, setFilter] = useState('');
+  const contacts = useSelector(getContacts);
+  const filter = useSelector(getFilter);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
-
-  const addContact = contact => {
+  const setContact = contact => {
     if (isDuplicate(contact)) {
       return toast.warn(
-        `${contact.name}: ${contact.number} is already in contacts`
+        `"${contact.name}: ${contact.number}" is already in contacts`
       );
+    } else {
+      toast.success('The contact has been successfully added');
+      return dispatch(addContact({ id: nanoid(), ...contact }));
     }
-    setContacts(prev => {
-      const newContact = {
-        id: nanoid(),
-        ...contact,
-      };
-      return [...prev, newContact];
-    });
   };
 
-  const removeContact = id => {
-    setContacts(prev => {
-      const newContacts = prev.filter(item => item.id !== id);
-      return newContacts;
-    });
+  const deleteContact = id => {
+    dispatch(removeContact(id));
+    toast.info('The contact has been successfully deleted');
   };
 
-  const handleChange = e => {
-    const { value } = e.target;
-    setFilter(value);
+  const handleChangeFilter = e => {
+    dispatch(changeFilter(e.target.value));
   };
 
   const isDuplicate = ({ name, number }) => {
@@ -84,7 +78,7 @@ export const App = () => {
         <Title>
           Phone<Accent>book</Accent>
         </Title>
-        <FormAddContact onSubmit={addContact} />
+        <FormAddContact onSubmit={setContact} />
       </Card>
 
       <ContactsCard>
@@ -92,12 +86,12 @@ export const App = () => {
         <SearchInput
           type="text"
           name="filter"
-          onChange={handleChange}
+          onChange={handleChangeFilter}
           value={filter}
           placeholder="Search"
         />
         {contacts.length > 0 ? (
-          <ContactList items={filteredContacts} removeContact={removeContact} />
+          <ContactList items={filteredContacts} removeContact={deleteContact} />
         ) : (
           <DefaultText>Contact list is empty</DefaultText>
         )}
