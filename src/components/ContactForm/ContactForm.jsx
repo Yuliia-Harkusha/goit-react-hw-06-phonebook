@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { addContact } from 'redux/contactsSlice';
+import { getContacts } from 'redux/selectors';
 import { FormItem, Input, Label, Button } from './ContactForm.styled';
 
-export const FormAddContact = ({ onSubmit }) => {
+export const FormAddContact = () => {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const nameId = nanoid();
   const numberId = nanoid();
@@ -22,9 +29,21 @@ export const FormAddContact = ({ onSubmit }) => {
     }
   };
 
+  const isDuplicate = ({ name, number }) => {
+    const result = contacts.find(
+      item => item.name === name && item.number === number
+    );
+    return result;
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
-    onSubmit({ name, number });
+    if (isDuplicate({ name, number })) {
+      toast.warn(`"${name}: ${number}" is already in contacts`);
+    } else {
+      toast.success('The contact has been successfully added');
+      dispatch(addContact({ id: nanoid(), name, number }));
+    }
     setName('');
     setNumber('');
   };
@@ -60,10 +79,7 @@ export const FormAddContact = ({ onSubmit }) => {
         />
       </FormItem>
       <Button type="submit">Add contact</Button>
+      <ToastContainer autoClose={2000} theme="colored" />
     </form>
   );
-};
-
-FormAddContact.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
 };

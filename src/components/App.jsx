@@ -1,14 +1,8 @@
 import { useSelector, useDispatch } from 'react-redux';
-import {
-  addContact,
-  removeContact,
-  changeFilter,
-  getContacts,
-  getFilter,
-} from 'redux/contactsSlice';
+import { removeContact, changeFilter } from 'redux/contactsSlice';
+import { getContacts, getFilter } from 'redux/selectors';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { nanoid } from 'nanoid';
 import { FormAddContact } from './ContactForm/ContactForm';
 import { ContactList } from './ContactList/ContactList';
 import {
@@ -27,17 +21,6 @@ export const App = () => {
   const filter = useSelector(getFilter);
   const dispatch = useDispatch();
 
-  const setContact = contact => {
-    if (isDuplicate(contact)) {
-      return toast.warn(
-        `"${contact.name}: ${contact.number}" is already in contacts`
-      );
-    } else {
-      toast.success('The contact has been successfully added');
-      return dispatch(addContact({ id: nanoid(), ...contact }));
-    }
-  };
-
   const deleteContact = id => {
     dispatch(removeContact(id));
     toast.info('The contact has been successfully deleted');
@@ -45,13 +28,6 @@ export const App = () => {
 
   const handleChangeFilter = e => {
     dispatch(changeFilter(e.target.value));
-  };
-
-  const isDuplicate = ({ name, number }) => {
-    const result = contacts.find(
-      item => item.name === name && item.number === number
-    );
-    return result;
   };
 
   const getFilteredContacts = () => {
@@ -78,7 +54,7 @@ export const App = () => {
         <Title>
           Phone<Accent>book</Accent>
         </Title>
-        <FormAddContact onSubmit={setContact} />
+        <FormAddContact />
       </Card>
 
       <ContactsCard>
